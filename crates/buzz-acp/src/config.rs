@@ -616,7 +616,8 @@ pub(crate) fn normalize_agent_command_identity(command: &str) -> String {
 
 fn default_agent_args(command: &str) -> Option<Vec<String>> {
     match normalize_agent_command_identity(command).as_str() {
-        "goose" => Some(vec!["acp".to_string()]),
+        // Native ACP entrypoints that require an `acp` subcommand.
+        "goose" | "opencode" => Some(vec!["acp".to_string()]),
         "codex" | "codex-acp" | "claude-agent-acp" | "claude-code-acp" | "claude-code"
         | "claudecode" | "buzz-agent" => Some(Vec::new()),
         _ => None,
@@ -1438,6 +1439,19 @@ mod tests {
     fn normalizes_goose_args_to_acp() {
         assert_eq!(normalize_agent_args("goose", Vec::new()), vec!["acp"]);
         assert_eq!(normalize_agent_args("goose", vec!["".into()]), vec!["acp"]);
+    }
+
+    #[test]
+    fn normalizes_opencode_args_to_acp() {
+        assert_eq!(normalize_agent_args("opencode", Vec::new()), vec!["acp"]);
+        assert_eq!(
+            normalize_agent_args("opencode", vec!["".into()]),
+            vec!["acp"]
+        );
+        assert_eq!(
+            normalize_agent_args("/usr/local/bin/opencode", Vec::new()),
+            vec!["acp"]
+        );
     }
 
     #[test]

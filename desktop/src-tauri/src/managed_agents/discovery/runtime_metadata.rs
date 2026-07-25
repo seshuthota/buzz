@@ -120,5 +120,20 @@ mod tests {
         );
         assert!(codex.adapter_install_instructions_url.contains("codex-acp"));
         assert!(codex.cli_install_hint.contains("desktop app alone"));
+
+        let opencode = known_acp_runtime_exact("opencode").unwrap();
+        assert_eq!(
+            opencode.cli_install_instructions_url,
+            "https://opencode.ai/docs/"
+        );
+        assert!(opencode.adapter_install_commands.is_empty());
+        assert!(opencode.adapter_install_instructions_url.is_empty());
+        assert!(opencode.cli_install_hint.contains("desktop app alone"));
+        assert_eq!(opencode.commands, &["opencode"]);
+        assert_eq!(opencode.skill_dir, Some(".opencode/skills"));
+        assert_eq!(
+            opencode.config_file_path,
+            Some("~/.config/opencode/opencode.jsonc")
+        );
     }
 }

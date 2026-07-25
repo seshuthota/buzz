@@ -22,6 +22,7 @@ pub(crate) fn read_config_surface(
             "goose" => super::goose::read_config_file().map(|c| (c, true)),
             "claude" => super::claude::read_config_file().map(|c| (c, true)),
             "codex" => super::codex::read_config_file().map(|c| (c, true)),
+            "opencode" => super::opencode::read_config_file().map(|c| (c, true)),
             "buzz-agent" => super::buzz_agent::read_config_file().map(|c| (c, true)),
             _ => None,
         })
@@ -221,6 +222,10 @@ fn mcp_config_file_path_for_runtime(runtime: &KnownAcpRuntime) -> Option<String>
         "claude" => Some(resolve_tilde("~/.claude.json")),
         "codex" => {
             super::codex::codex_config_path().map(|path| path.to_string_lossy().into_owned())
+        }
+        // OpenCode keeps MCP under the same user config file as model settings.
+        "opencode" => {
+            super::opencode::opencode_config_path().map(|path| path.to_string_lossy().into_owned())
         }
         _ => None,
     }

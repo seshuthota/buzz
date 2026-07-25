@@ -89,6 +89,31 @@ buzz-acp
 Older installs that still expose `claude-code-acp` are also supported. `buzz-acp`
 treats both Claude ACP command names as the same zero-arg runtime.
 
+## Running with OpenCode
+
+[OpenCode](https://opencode.ai/) speaks ACP natively via `opencode acp` (same shape as Goose — no separate npm adapter).
+
+```bash
+# Install OpenCode (or: npm install -g opencode-ai@latest)
+curl -fsSL https://opencode.ai/install | bash
+
+# Configure credentials (one or more providers)
+opencode providers login
+
+# Run
+export BUZZ_ACP_AGENT_COMMAND="opencode"
+export BUZZ_ACP_AGENT_ARGS="acp"
+# BUZZ_PRIVATE_KEY + BUZZ_RELAY_URL as usual
+
+buzz-acp
+```
+
+Desktop managed agents resolve the same defaults from the runtime catalog when the harness is set to **OpenCode**: command `opencode`, args `acp`, working directory the Buzz nest (`~/.buzz-dev` / `~/.buzz`).
+
+Config file (optional): `~/.config/opencode/opencode.jsonc` — model is usually `provider/model` (e.g. `openrouter/…`). Credentials live in `~/.local/share/opencode/auth.json` (managed by `opencode providers`).
+
+> **Args required:** bare `opencode` starts the interactive TUI. Buzz must pass `acp` so the process speaks ACP over stdio.
+
 ## Configuration
 
 All configuration is via environment variables (or CLI flags — every env var has a matching flag).

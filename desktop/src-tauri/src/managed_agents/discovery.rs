@@ -16,6 +16,8 @@ pub(crate) use runtime_metadata::KnownAcpRuntime;
 const GOOSE_AVATAR_URL: &str = "https://goose-docs.ai/img/logo_dark.png";
 const CLAUDE_CODE_AVATAR_URL: &str = "https://anthropic.gallerycdn.vsassets.io/extensions/anthropic/claude-code/2.1.77/1773707456892/Microsoft.VisualStudio.Services.Icons.Default";
 const CODEX_AVATAR_URL: &str = "https://openai.gallerycdn.vsassets.io/extensions/openai/chatgpt/26.5313.41514/1773706730621/Microsoft.VisualStudio.Services.Icons.Default";
+const OPENCODE_AVATAR_URL: &str =
+    "https://raw.githubusercontent.com/anomalyco/opencode/dev/packages/console/app/public/favicon-96x96.png";
 const BUZZ_AGENT_AVATAR_URL: &str =
     "https://raw.githubusercontent.com/block/buzz/refs/heads/main/crates/buzz-agent/buzz-agent.png";
 
@@ -161,6 +163,47 @@ const KNOWN_ACP_RUNTIMES: &[KnownAcpRuntime] = &[
         login_hint: Some("Run `codex login` to authenticate."),
         // Verified: `codex login status` exits 0 when logged in, non-zero otherwise.
         auth_probe_args: Some(&["codex", "login", "status"]),
+    },
+    // OpenCode exposes native ACP via `opencode acp` (same shape as Goose).
+    // No separate npm adapter is required. See https://opencode.ai/docs/acp/
+    KnownAcpRuntime {
+        id: "opencode",
+        label: "OpenCode",
+        commands: &["opencode"],
+        aliases: &[],
+        avatar_url: OPENCODE_AVATAR_URL,
+        mcp_command: None,
+        mcp_hooks: false,
+        underlying_cli: Some("opencode"),
+        cli_install_commands: &["curl -fsSL https://opencode.ai/install | bash"],
+        cli_install_commands_windows: &[
+            "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"irm https://opencode.ai/install | iex\"",
+            "npm install -g opencode-ai@latest",
+        ],
+        adapter_install_commands: &[],
+        cli_install_instructions_url: "https://opencode.ai/docs/",
+        adapter_install_instructions_url: "",
+        cli_install_hint: "Buzz requires the OpenCode CLI; the desktop app alone is not enough.",
+        adapter_install_hint: "",
+        // Nest skill symlink; OpenCode also reads ~/.config/opencode/skills.
+        skill_dir: Some(".opencode/skills"),
+        supports_acp_model_switching: false,
+        model_env_var: None,
+        provider_env_var: None,
+        provider_locked: false,
+        default_env: &[],
+        config_file_path: Some("~/.config/opencode/opencode.jsonc"),
+        config_file_format: Some("json"),
+        supports_acp_native_config: false,
+        thinking_env_var: None,
+        max_tokens_env_var: None,
+        context_limit_env_var: None,
+        required_normalized_fields: &[],
+        login_hint: Some("Run `opencode providers login` to configure credentials."),
+        // No reliable non-interactive login probe yet: `opencode providers list`
+        // exits 0 whether or not credentials are configured (pretty TUI output).
+        // Credentials live in ~/.local/share/opencode/auth.json.
+        auth_probe_args: None,
     },
     KnownAcpRuntime {
         id: "buzz-agent",
@@ -348,7 +391,8 @@ pub use overrides::{apply_agent_command_update, create_time_agent_command_overri
 
 fn default_agent_args(command: &str) -> Option<Vec<String>> {
     match normalize_command_identity(command).as_str() {
-        "goose" => Some(vec!["acp".to_string()]),
+        // Native ACP entrypoints that require an `acp` subcommand.
+        "goose" | "opencode" => Some(vec!["acp".to_string()]),
         "codex" | "codex-acp" | "claude-agent-acp" | "claude-code-acp" | "claude-code"
         | "claudecode" | "buzz-agent" => Some(Vec::new()),
         _ => None,

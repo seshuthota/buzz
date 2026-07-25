@@ -97,6 +97,39 @@ fn normalizes_buzz_agent_args_to_empty() {
 }
 
 #[test]
+fn normalizes_opencode_and_goose_args_to_acp() {
+    assert_eq!(normalize_agent_args("opencode", Vec::new()), vec!["acp"]);
+    assert_eq!(
+        normalize_agent_args("opencode", vec!["".into()]),
+        vec!["acp"]
+    );
+    assert_eq!(
+        normalize_agent_args("/usr/local/bin/opencode", Vec::new()),
+        vec!["acp"]
+    );
+    assert_eq!(normalize_agent_args("goose", Vec::new()), vec!["acp"]);
+}
+
+#[test]
+fn opencode_runtime_catalog_metadata() {
+    let runtime = super::known_acp_runtime_exact("opencode").expect("opencode catalog entry");
+    assert_eq!(runtime.label, "OpenCode");
+    assert_eq!(runtime.commands, &["opencode"]);
+    assert!(runtime.adapter_install_commands.is_empty());
+    assert_eq!(runtime.underlying_cli, Some("opencode"));
+    assert!(super::known_acp_runtime("opencode").is_some());
+    assert!(super::known_acp_runtime("/opt/bin/opencode").is_some());
+    assert!(
+        !runtime.cli_install_commands.is_empty(),
+        "opencode must have CLI install commands"
+    );
+    assert!(
+        !runtime.cli_install_commands_for_os().is_empty(),
+        "opencode must have install commands on every platform"
+    );
+}
+
+#[test]
 fn login_shell_lookup_treats_command_as_data() {
     let marker =
         std::env::temp_dir().join(format!("buzz-discovery-marker-{}", uuid::Uuid::new_v4()));
